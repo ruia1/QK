@@ -1,199 +1,194 @@
 # -*- coding: utf-8 -*-
 """
-Created on Sat Sep 15 19:09:47 2018
+素数探索モード
 
-@author: tyyth
 """
-from random import randint
-from math import sqrt
-def m(n):
-    if type(n) != int or n < 2: return False
-    if n == 2: return True
-    if n & 1 == 0: return False
-    if n < 5000:
-        for i in range(3,int(sqrt(n))+1,2):
-            if n%i == 0: return False
-        return True
-    d = (n - 1) >> 1
-    while d & 1 == 0:
-        d >>= 1
-    for i in range(100):
-        a = randint(1,n-1)
-        t = d
-        y = pow(a, t, n)
-        while t !=n - 1 and y != 1 and y != n -1:
-            y = (y * y) % n
-            t <<= 1
-        if y != n - 1 and t & 1 == 0: return False
-    return True
+from milpri import milpri as m
+
+def add(n):#1足す
+    try:
+        nl = n[-1]
+    except IndexError:
+        return "1"#'K'を'11'に繰り上げる
+    if nl == "K":
+        return add(n[0:-1])+"1"
+    elif nl in ["1","2","3","4","5","6","7","8"]:
+        return n[0:-1]+str(int(nl)+1)
+    elif nl == "9":
+        return n[0:-1]+"T"
+    elif nl == "T":
+        return n[0:-1]+"J"
+    elif nl == "J":
+        return n[0:-1]+"Q"
+    else:
+        return n[0:-1]+"K"
+    
+def odd(n):#偶数なら1足す
+    nl = n[-1]
+    if nl in ["2","4","6","8"]:
+        return n[0:-1]+str(int(nl)+1)
+    elif nl == "T":
+        return n[0:-1]+"J"
+    elif nl == "Q":
+        return n[0:-1]+"K"
+    elif nl == "5":
+        return n[0:-1]+"7"
+    return n
+
+def dic(n):
+    try:
+        nl = n[-1]
+    except IndexError:
+        return ""
+    if nl == "1":
+        return dic(n[0:-1])+"K"
+    elif nl in ["2","3","4","5","6","7","8","9"]:
+        return n[0:-1]+str(int(nl)-1)
+    elif nl == "T":
+        return n[0:-1]+"9"
+    elif nl == "J":
+        return n[0:-1]+"T"
+    elif nl == "Q":
+        return n[0:-1]+"J"
+    else:
+        return n[0:-1]+"Q"
+    
+def substitutes(st):#数字→絵札
+    st = st.replace("10","T")
+    st = st.replace("12","Q")
+    st = st.replace("13","K")
+    st = st.replace("11","J")
+    return st
+
+def unsubstitutes(st):#絵札→数字
+    st = st.replace("T","10")
+    st = st.replace("Q","12")
+    st = st.replace("K","13")
+    st = st.replace("J","11")
+    return st
+
+def checkp(n,judlenme,qkp,lenmin,lenmax,pereven,secard,al):#条件に合っているか探索　合っているならFalse
+    if judlenme:#枚数でカウント
+        nn = unsubstitutes(n)
+        ni = int(nn)
+        if "0" in n:
+            print(n,0)
+            return "E"
+        nlen = len(n)
+        if lenmax != 0 and nlen > lenmax:return "s"
+        if lenmin != 0 and nlen < lenmin:return "l"
+        if not m(ni):return True
+        if secard != "0":
+            if secard not in n:return True
+    else:#桁数でカウント
+        ni = n
+        nn = str(n)
+        n = nn
+        nlen = len(nn)
+        if lenmax != 0 and lenmax < nlen:return "s"
+        if lenmin != 0 and nlen < lenmin:return "l"
+        if not m(ni):return True
+        if secard != "0":
+            if unsubstitutes(secard) not in nn:return True
+        if qkp:
+            if "0" in substitutes(n):return True
+    if pereven != 0:#偶数消費割合について判定
+        npereven = 0
+        if nlen > 1:
+            for i in n[0:-1]:
+                if i in ["2","4","5","6","8","T","Q"]:
+                    npereven += 1
+            if 100*npereven <= (nlen-1)*pereven:return True
+        else:
+            if nn not in ["2","5"] and not npereven:return True
+    if al:#詳細設定が設定されてるなら
+        if 3 in al:#レピュニット素数
+            for i in nn:
+                if i != "1":return True
+        if 4 in al:#安全素数
+            if not m(ni>>1):return True
+        if 5 in al:#ソフィー・ジェルマン素数
+            if not m(2*ni+1):return True
+        nl = int(nn[-1])
+        al6 = 6 in al
+        if al6:#四つ子素数
+            if ni in [5,7]:
+                pass
+            elif nl == 1:
+                if not(m(ni+2) and m(ni+6) and m(ni+8)):return True
+            elif nl == 3:
+                if not(m(ni-2) and m(ni+4) and m(ni+6)):return True
+            elif nl == 7:
+                if not(m(ni-6) and m(ni-4) and m(ni+2)):return True
+            else:
+                if not(m(ni-8) and m(ni-6) and m(ni-2)):return True
+        or8,or9,or10,n3 = False,False,False,bool(ni%3-1)#n3:niの3の剰余(1:False,2:True)
+        if 7 in al:#三つ子素数
+            if ni in [3,5] or al6:
+                pass
+            elif ni == 2:
+                return True
+            elif n3:#３の剰余が２で
+                if nl == 3:#末尾が３の時、n-6,n-4型しかあり得ない
+                    if not (m(ni-6) and m(ni-4)):return True
+                elif nl == 9:#上に同じ
+                    if not (m(ni+2) and m(ni+6)):return True
+                else:#末尾が1か7なら
+                    mm4,m2 = m(ni-4),m(ni+2)
+                    if not mm4 and not m2:return True#n-4,n+2どちらも素数でなければ三つ子でない
+                    if mm4 and m2:#どちらも素数なら三つ子
+                        pass
+                    elif mm4:#n-4が素数なら、n-6を判定
+                        if not m(ni-6):return True
+                    else:#n+2が素数なら、n+2を判定
+                        if not m(ni+6):return True
+            else:#３の剰余が１で～（上に同じ）
+                if nl == 1:
+                    if not (m(ni-6) and m(ni-2)):return True
+                elif nl == 7:
+                    if not (m(ni+4) and m(ni+6)):return True
+                else:
+                    mm2,m4 = m(ni-2),m(ni+4)
+                    if not mm2 and not m4:return True
+                    if mm2 and m4:
+                        pass
+                    elif mm2:
+                        if not m(ni-6):return True
+                    else:
+                        if not m(ni+6):return True
+        if 11 in al:#JK四つ子　~1,~7,~11,~13
+            if ni < 10:return True
+            elif nl == 1:
+                if not(m(ni+6) and m(10*ni+1) and m(10*ni+3)) or not(nn[-2]=="1" and m(ni+2) and m(ni//10) and m(ni//10+6)):return True
+            elif nl == 3:
+                if not(nn[-2]=="1" and m(ni-2) and m(ni//10) and m(ni//10+2)):return True
+            elif nl == 7:
+                if not(m(ni-6) and m(10*ni-59) and m(10*ni-57)):return True
+            else:
+                return True
+        if 8 in al:#双子素数
+            if al6 or or8 or ni in [2,3] or 11 in al:#四つ子or三つ子or2or3orJK四つ子なら双子
+                pass
+            elif n3:
+                if not m(ni+2):return True
+            elif not m(ni-2):return True
+        if 9 in al:#いとこ素数
+            if al6 or or9:
+                pass
+            elif n3:
+                if not m(ni-4):return True
+            elif not m(ni+4):return True
+        if 10 in al:#セクシー素数
+            if al6 or or10 or 11 in al:
+                pass
+            elif not(m(ni-6) and m(ni+6)):return True
+    return False
 
 def sehome():
-    def add(n):
-        try:
-            nl = n[-1]
-        except IndexError:
-            return "1"
-        if nl == "K":
-            return add(n[0:-1])+"1"
-        elif nl in ["1","2","3","4","5","6","7","8"]:
-            return n[0:-1]+str(int(nl)+1)
-        elif nl == "9":
-            return n[0:-1]+"T"
-        elif nl == "T":
-            return n[0:-1]+"J"
-        elif nl == "J":
-            return n[0:-1]+"Q"
-        else:
-            return n[0:-1]+"K"
-        
-    def odd(n):
-        nl = n[-1]
-        if nl in ["2","4","6","8"]:
-            return n[0:-1]+str(int(nl)+1)
-        if nl == "T":
-            return n[0:-1]+"J"
-        if nl == "Q":
-            return n[0:-1]+"K"
-        if nl == "5":
-            return n[0:-1]+"7"
-        return n
-            
-    def substitutes(st):
-        st = st.replace("10","T")
-        st = st.replace("12","Q")
-        st = st.replace("13","K")
-        st = st.replace("11","J")
-        return st
-    
-    def unsubstitutes(st):
-        st = st.replace("T","10")
-        st = st.replace("Q","12")
-        st = st.replace("K","13")
-        st = st.replace("J","11")
-        return st
-    
-    def checkp(n,judlenme,qkp,lenmin,lenmax,pereven,secard,al):
-        if judlenme:#枚数でカウント
-            nn = unsubstitutes(n)
-            ni = int(nn)
-            if "0" in n:
-                print(n,0)
-                return "E"
-            nlen = len(n)
-            if lenmax != 0 and nlen > lenmax:return "s"
-            if not m(ni):return True
-            if lenmin != 0 and nlen < lenmin:return True
-            if secard != "0":
-                if secard not in n:return True
-        else:#桁数でカウント
-            ni = n
-            nn = str(n)
-            n = nn
-            nlen = len(nn)
-            if lenmax != 0 and lenmax < nlen:return "s"
-            if not m(ni):return True
-            if lenmin != 0 and nlen < lenmin:return True
-            if secard != "0":
-                if unsubstitutes(secard) not in nn:return True
-            if qkp:
-                if "0" in substitutes(n):return True
-        if pereven != 0:
-            npereven = 0
-            if nlen > 1:
-                for i in n[0:-1]:
-                    if i in ["2","4","5","6","8","T","Q"]:
-                        npereven += 1
-                if 100*npereven <= (nlen-1)*pereven:return True
-            else:
-                if nn not in ["2","5"] and not npereven:return True
-        if al:
-            if 3 in al:#レピュニット素数
-                for i in nn:
-                    if i != "1":return True
-            if 4 in al:#安全素数
-                if not m(ni>>1):return True
-            if 5 in al:#ソフィー・ジェルマン素数
-                if not m(2*ni+1):return True
-            nl = int(nn[-1])
-            al6 = 6 in al
-            if al6:#四つ子素数
-                if ni in [5,7]:
-                    pass
-                elif nl == 1:
-                    if not(m(ni+2) and m(ni+6) and m(ni+8)):return True
-                elif nl == 3:
-                    if not(m(ni-2) and m(ni+4) and m(ni+6)):return True
-                elif nl == 7:
-                    if not(m(ni-6) and m(ni-4) and m(ni+2)):return True
-                else:
-                    if not(m(ni-8) and m(ni-6) and m(ni-2)):return True
-            or8,or9,or10,n3 = False,False,False,bool(ni%3-1)#n3==1:False,n3==2:True
-            if 7 in al:#三つ子素数
-                if al6:
-                    pass
-                elif ni in [3,5]:
-                    pass
-                elif ni == 2:
-                    return True
-                elif n3:
-                    if nl == 3:
-                        if not (m(ni-6) and m(ni-4)):return True
-                    elif nl == 9:
-                        if not (m(ni+2) and m(ni+6)):return True
-                    else:
-                        mm4,m2 = m(ni-4),m(ni+2)
-                        if not mm4 and not m2:return True
-                        if mm4 and m2:
-                            pass
-                        elif mm4:
-                            if not m(ni-6):return True
-                        else:
-                            if not m(ni+6):return True
-                else:
-                    if nl == 1:
-                        if not (m(ni-6) and m(ni-2)):return True
-                    elif nl == 7:
-                        if not (m(ni+4) and m(ni+6)):return True
-                    else:
-                        mm2,m4 = m(ni-2),m(ni+4)
-                        if not mm2 and not m4:return True
-                        if mm2 and m4:
-                            pass
-                        elif mm2:
-                            if not m(ni-6):return True
-                        else:
-                            if not m(ni+6):return True
-            if 11 in al:#JK四つ子
-                if ni < 10:return True
-                elif nl == 1:
-                    if not(m(ni+6) and m(10*ni+1) and m(10*ni+3)) or not(nn[-2]=="1" and m(ni+2) and m(ni//10) and m(ni//10+6)):return True
-                elif nl == 3:
-                    if not(nn[-2]=="1" and m(ni-2) and m(ni//10) and m(ni//10+2)):return True
-                elif nl == 7:
-                    if not(m(ni-6) and m(10*ni-59) and m(10*ni-57)):return True
-                else:
-                    return True
-            if 8 in al:#双子素数
-                if al6 or or8 or ni in [2,3] or 11 in al:
-                    pass
-                elif n3:
-                    if not m(ni+2):return True
-                elif not m(ni-2):return True
-            if 9 in al:#いとこ素数
-                if al6 or or9:
-                    pass
-                elif n3:
-                    if not m(ni-4):return True
-                elif not m(ni+4):return True
-            if 10 in al:#セクシー素数
-                if al6 or or10 or 11 in al:
-                    pass
-                elif not(m(ni-6) and m(ni+6)):return True
-        return False
     while True:
         con = False
         print("素数探索モードです。探索する素数の条件を設定してください。\n"+
-              "探索する数、大きさ、素数大富豪素数、偶数消費、\n"
+              "探索する数、大きさ、表示順、素数大富豪素数、偶数消費、\n"
               "特定のカードを含むか、詳細設定を設定します。\n"+
               "endを入力することでいつでも終了できます。\n"
               "redoを入力することでいつでも入力をし直す事ができます。\n")
@@ -262,6 +257,24 @@ def sehome():
                 continue
             break
         if con:continue
+        if lenmax == 0:
+            sortme = 1
+        else:
+            while True:
+                print("昇順か降順、どちらで探索しますか。1:昇順 0:降順")
+                sortme = input()
+                if sortme == "end":
+                    if '__main__'==__name__:input("終了するにはエンターを押してください...")
+                    return
+                elif sortme == "redo":
+                    con = True
+                    break
+                try:sortme=int(bool(int(sortme)))
+                except ValueError:
+                    print("正しい値を入力してください。")
+                    continue
+                break
+            if con:continue
         if judlenme:
             qkp = 1
         else:
@@ -430,13 +443,16 @@ def sehome():
                     print("続けますか。はい：1 いいえ：0")
                 else:
                     print(str(many)+"個は見つかりませんでした。続けますか。はい：1 いいえ：0")
-        elif al1:
+        elif al1:#メルセンヌ素数探索
             al = al.remove(1)
-            if not checkp(3,0,qkp,lenmin,lenmax,pereven,secard,al):
+            if sortme and not checkp(3,0,qkp,lenmin,lenmax,pereven,secard,al):
                 print(3)
                 if fname:f.write("3\n")
                 count += 1
-            n = 3
+            if sortme:n = 3
+            else:
+                n = int(3.322*lenmax)+1
+                if not n&1:n += 1#奇数にする
             while True:
                 if m(n):
                     nn = 2**n-1
@@ -448,12 +464,17 @@ def sehome():
                         if count >= many:
                             print("続けますか。はい：1 いいえ：0")
                             break
-                    elif cp == "s":
+                    elif (sortme and cp == "s") or (not sortme and cp == "l"):
                         print(str(many)+"個は見つかりませんでした。続けますか。はい：1 いいえ：0")
                         break
-                n += 2
+                if sortme:n += 2
+                else:n -= 2
+            if not sortme and not checkp(3,0,qkp,lenmin,lenmax,pereven,secard,al):
+                print(3)
+                if fname:f.write("3\n")
+                count += 1
         elif al2:
-            for n in range(6):
+            for n in range(int(not sortme)*6,sortme*6,sortme*2-1):
                 nn = 2**(2**n)+1
                 cp = checkp(nn,0,qkp,lenmin,lenmax,pereven,secard,al)
                 if not cp:
@@ -463,13 +484,12 @@ def sehome():
                     if count >= many:
                         print("続けますか。はい：1 いいえ：0")
                         break
-                elif cp == "s" or n == 5:
+                elif (sortme and (cp == "s" or n == 5)) or (not sortme and (cp == "l" or n == 0)):
                     print(str(many)+"個は見つかりませんでした。続けますか。はい：1 いいえ：0")
                     break
-                n += 1
         elif al3:
             al = al.remove(3)
-            for n in [2,19,23,317,3]:
+            for n in [3,2,19,23,317,3][int(not sortme)*5:sortme*5+1:sortme*2-1]:
                 if n == 3:
                     print(str(many)+"個は見つかりませんでした。続けますか。はい：1 いいえ：0")
                     break
@@ -482,37 +502,18 @@ def sehome():
                     if count >= many:
                         print("続けますか。はい：1 いいえ：0")
                         break
-                elif cp == "s":
+                elif (sortme and cp == "s") or (not sortme and cp == "l"):
                     print(str(many)+"個は見つかりませんでした。続けますか。はい：1 いいえ：0")
                     break
                 n += 1
         elif al6:
             t = False
-            for i in [5,7]:
-                cp = checkp(i,0,qkp,lenmin,lenmax,pereven,secard,al)
-                if not cp:
-                    if fname:f.write(str(i)+"\n")
-                    print(i)
-                    count += 1
-                    if count >= many:
-                        print("続けますか。はい：1 いいえ：0")
-                        t = True
-                        break
-                elif cp == "s":
-                    print(str(many)+"個は見つかりませんでした。続けますか。はい：1 いいえ：0")
-                    t = True
-                    break
-            if t:break
-            if lenmin > 1:
-                n = 1+10**(lenmin-1)
-            else:
-                n = 11
-            while True:
-                for nn in [n,n+2,n+6,n+8]:
-                    cp = checkp(nn,0,qkp,lenmin,lenmax,pereven,secard,al)
+            if sortme:
+                for i in [5,7]:
+                    cp = checkp(i,0,qkp,lenmin,lenmax,pereven,secard,al)
                     if not cp:
-                        if fname:f.write(str(nn)+"\n")
-                        print(nn)
+                        if fname:f.write(str(i)+"\n")
+                        print(i)
                         count += 1
                         if count >= many:
                             print("続けますか。はい：1 いいえ：0")
@@ -522,16 +523,57 @@ def sehome():
                         print(str(many)+"個は見つかりませんでした。続けますか。はい：1 いいえ：0")
                         t = True
                         break
-                if t:break
-                n +=30
-        elif al11:
-            if lenmin > 1:
-                n = 10**(lenmin-1)+21
+                    if t:break
+                if lenmin > 1:
+                    n = 1+10**(lenmin-1)
+                else:
+                    n = 11
             else:
-                n = 31
+                10**(lenmax-1)-29
+            while True:
+                for nn in [n,n+2,n+6,n+8][::sortme*2-1]:
+                    cp = checkp(nn,0,qkp,lenmin,lenmax,pereven,secard,al)
+                    if not cp:
+                        if fname:f.write(str(nn)+"\n")
+                        print(nn)
+                        count += 1
+                        if count >= many:
+                            print("続けますか。はい：1 いいえ：0")
+                            t = True
+                            break
+                    elif (sortme and cp == "s") or (not sortme and cp == "l"):
+                        print(str(many)+"個は見つかりませんでした。続けますか。はい：1 いいえ：0")
+                        t = True
+                        break
+                if t:break
+                if sortme:n += 30
+                else:n -= 30
+            if not sortme and not cp == "l":
+                for i in [7,5]:
+                    cp = checkp(i,0,qkp,lenmin,lenmax,pereven,secard,al)
+                    if not cp:
+                        if fname:f.write(str(i)+"\n")
+                        print(i)
+                        count += 1
+                        if count >= many:
+                            print("続けますか。はい：1 いいえ：0")
+                            t = True
+                            break
+                    elif cp == "l":
+                        print(str(many)+"個は見つかりませんでした。続けますか。はい：1 いいえ：0")
+                        t = True
+                        break
+                    if t:break
+        elif al11:
+            if sortme:
+                if lenmin > 1:n = 10**(lenmin-1)+21
+                else:n = 31
+            else:
+                if lenmax == 1:1
+                10**(lenmax-1)-9
             t = False
             while True:
-                for nn in [n,n+6,10*n+1,10*n+3]:
+                for nn in [n,n+6,10*n+1,10*n+3][::sortme*2-1]:
                     cp = checkp(nn,0,qkp,lenmin,lenmax,pereven,secard,al)
                     if not cp:
                         if fname:f.write(str(nn)+"\n")
@@ -541,31 +583,26 @@ def sehome():
                             print("続けますか。はい：1 いいえ：0")
                             t = True
                             break
-                    elif cp == "s":
+                    elif (sortme and cp == "s") or (not sortme and cp == "l"):
                         print(str(many)+"個は見つかりませんでした。続けますか。はい：1 いいえ：0")
                         t = True
                         break
-                if t:break
-                n +=30
+                if t or n == 1:break
+                if sortme:n += 30
+                else:n -= 30
         else:
             if judlenme:
-                cp = checkp("2",1,0,lenmin,lenmax,pereven,secard,al)
-                if not cp:
-                    if fname:f.write("2\n")
-                    print(2)
-                    count += 1
-                    if count >= many:
-                        print("続けますか。はい：1 いいえ：0")
-                        break
-                    elif cp == "s":
-                        print(str(many)+"個は見つかりませんでした。続けますか。はい：1 いいえ：0")
-                        break
-                if lenmin > 0:
-                    n = ""
-                    for i in range(lenmin):
-                        n += "1"
+                if sortme:
+                    if lenmin > 0:
+                        n = ""
+                        for i in range(lenmin):
+                            n += "1"
+                    else:
+                        n = "2"
                 else:
-                    n = "3"
+                    n = ""
+                    for i in range(lenmax):
+                        n += "K"
                 ns = []
                 while True:
                     if unsubstitutes(n) not in ns:
@@ -578,22 +615,31 @@ def sehome():
                             if count >= many:
                                 print("続けますか。はい：1 いいえ：0")
                                 break
-                        elif cp == "s":
+                        elif (sortme and cp == "s") or (not sortme and cp == "l"):
                             print(str(many)+"個は見つかりませんでした。続けますか。はい：1 いいえ：0")
                             break
-                    n = odd(add(n))
+                    if sortme:n = odd(add(n))
+                    else:
+                        if n == "2":
+                            print(str(many)+"個は見つかりませんでした。続けますか。はい：1 いいえ：0")
+                            break
+                        elif n == "3":n = "2"
+                        else:n = dic(dic(n))
             else:
-                if not checkp(2,0,qkp,lenmin,lenmax,pereven,secard,al):
-                    if fname:f.write("2\n")
-                    print(2)
-                    count += 1
-                    if many == 1:
-                        print("続けますか。はい:1 いいえ:0")
-                        break
-                if lenmin != 0:
-                    n = 10**(lenmin-1)+1
+                if sortme:
+                    if not checkp(2,0,qkp,lenmin,lenmax,pereven,secard,al):
+                        if fname:f.write("2\n")
+                        print(2)
+                        count += 1
+                        if many == 1:
+                            print("続けますか。はい:1 いいえ:0")
+                            break
+                    if lenmin != 0:
+                        n = 10**(lenmin-1)+1
+                    else:
+                        n = 3
                 else:
-                    n = 3
+                    n = 10**(lenmax)-3
                 while True:
                     cp = checkp(n,0,qkp,lenmin,lenmax,pereven,secard,al)
                     if not cp:
@@ -603,10 +649,20 @@ def sehome():
                         if count >= many:
                             print("続けますか。はい:1 いいえ:0")
                             break
-                    elif cp == "s":
+                    elif (sortme and cp == "s") or (not sortme and cp == "l"):
                         print(str(many)+"個は見つかりませんでした。続けますか。はい:1 いいえ:0")
                         break
-                    n += 2
+                    if sortme:n += 2
+                    else:n -= 2
+                    if n == 1:break
+                if not sortme and cp != "l" and count < many:
+                    if not checkp(2,0,qkp,lenmin,lenmax,pereven,secard,al):
+                        if fname:f.write("2\n")
+                        print(2)
+                        count += 1
+                        if count >= many:
+                            print("続けますか。はい:1 いいえ:0")
+                    print(str(many)+"個は見つかりませんでした。続けますか。はい:1 いいえ:0")
         if fname:f.close()
         if input() in ["0","０"]:
             print("終了します。")

@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
+#素数判定　素数ならTrue
+#ミラーラビン素数判定法
 from random import randint
 from math import sqrt
 def milpri(n):
     if type(n) != int or n < 2: return False
     if n == 2: return True
     if n & 1 == 0: return False
-    if n < 5000:
+    if n < 5000:#5000以下は誤作動防止のため総割り
         for i in range(3,int(sqrt(n))+1,2):
             if n%i == 0: return False
         return True

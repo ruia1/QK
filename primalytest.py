@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+#素数判定モード
 from milpri import milpri
 
 def ptest(n):

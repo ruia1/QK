@@ -1,10 +1,13 @@
 # -*- coding: utf-8 -*-
+#作製途中
+
 import primalytest
 
 class setting:
     def __init__(self,plc,pl,):
         self.plc = plc
         self.pl = pl
+        
 def gmhome():
     print("試合モードです。\n")
     while True:
