@@ -1,58 +1,78 @@
 # -*- coding: utf-8 -*-ｓ
-
+import csv
+#import tkinter as tk
+#from tkinter import messagebox as tkm
+#from tkinter import filedialog as tkf
 games = []
-
+eznum = [['TT', 'TJ', 'TQ', 'TK', 'TX', 'JJ', 'JQ', 'JK', 'JX', 'QQ', 'QK', 'QX', 'KK', 'KX', 'XX'],
+['TTT', 'TTJ', 'TTQ', 'TTK', 'TTX', 'TJJ', 'TJQ', 'TJK', 'TJX', 'TQQ', 'TQK', 'TQX', 'TKK', 'TKX', 'TXX', 'JJJ', 'JJQ', 'JJK', 'JJX', 'JQQ', 'JQK', 'JQX', 'JKK', 'JKX', 'JXX', 'QQQ', 'QQK', 'QQX', 'QKK', 'QKX', 'QXX', 'KKK', 'KKX', 'KXX'],
+['TTTT', 'TTTJ', 'TTTQ', 'TTTK', 'TTTX', 'TTJJ', 'TTJQ', 'TTJK', 'TTJX', 'TTQQ', 'TTQK', 'TTQX', 'TTKK', 'TTKX', 'TTXX', 'TJJJ', 'TJJQ', 'TJJK', 'TJJX', 'TJQQ', 'TJQK', 'TJQX', 'TJKK', 'TJKX', 'TJXX', 'TQQQ', 'TQQK', 'TQQX', 'TQKK', 'TQKX', 'TQXX', 'TKKK', 'TKKX', 'TKXX', 'JJJJ', 'JJJQ', 'JJJK', 'JJJX', 'JJQQ', 'JJQK', 'JJQX', 'JJKK', 'JJKX', 'JJXX', 'JQQQ', 'JQQK', 'JQQX', 'JQKK', 'JQKX', 'JQXX', 'JKKK', 'JKKX', 'JKXX', 'QQQQ', 'QQQK', 'QQQX', 'QQKK', 'QQKX', 'QQXX', 'QKKK', 'QKKX', 'QKXX', 'KKKK', 'KKKX', 'KKXX'],
+['TTTTJ', 'TTTTQ', 'TTTTK', 'TTTTX', 'TTTJJ', 'TTTJQ', 'TTTJK', 'TTTJX', 'TTTQQ', 'TTTQK', 'TTTQX', 'TTTKK', 'TTTKX', 'TTTXX', 'TTJJJ', 'TTJJQ', 'TTJJK', 'TTJJX', 'TTJQQ', 'TTJQK', 'TTJQX', 'TTJKK', 'TTJKX', 'TTJXX', 'TTQQQ', 'TTQQK', 'TTQQX', 'TTQKK', 'TTQKX', 'TTQXX', 'TTKKK', 'TTKKX', 'TTKXX', 'TJJJJ', 'TJJJQ', 'TJJJK', 'TJJJX', 'TJJQQ', 'TJJQK', 'TJJQX', 'TJJKK', 'TJJKX', 'TJJXX', 'TJQQQ', 'TJQQK', 'TJQQX', 'TJQKK', 'TJQKX', 'TJQXX', 'TJKKK', 'TJKKX', 'TJKXX', 'TQQQQ', 'TQQQK', 'TQQQX', 'TQQKK', 'TQQKX', 'TQQXX', 'TQKKK', 'TQKKX', 'TQKXX', 'TKKKK', 'TKKKX', 'TKKXX', 'JJJJQ', 'JJJJK', 'JJJJX', 'JJJQQ', 'JJJQK', 'JJJQX', 'JJJKK', 'JJJKX', 'JJJXX', 'JJQQQ', 'JJQQK', 'JJQQX', 'JJQKK', 'JJQKX', 'JJQXX', 'JJKKK', 'JJKKX', 'JJKXX', 'JQQQQ', 'JQQQK', 'JQQQX', 'JQQKK', 'JQQKX', 'JQQXX', 'JQKKK', 'JQKKX', 'JQKXX', 'JKKKK', 'JKKKX', 'JKKXX', 'QQQQK', 'QQQQX', 'QQQKK', 'QQQKX', 'QQQXX', 'QQKKK', 'QQKKX', 'QQKXX', 'QKKKK', 'QKKKX', 'QKKXX', 'KKKKX', 'KKKXX']]
 class game:
-    def __init__(self,turnlen,turns,yfirst,ylose,yhand,chand,ytjqkx=0,ctjqkx=0):
+    def __init__(self,turnlen,turns,yfirst,ywin,yhand,chand,yez=0,cez=0):
         self.turnlen = turnlen
         self.turns = turns
         self.yfirst = yfirst
-        self.yhand = yhand.sort()
-        self.chand = chand.sort()
-        self.ywin = int(not ylose)
-        self.ytjqkx = ytjqkx
-        self.ctjqkx = ctjqkx
+        self.yhand = self.sethand(yhand)
+        self.chand = self.sethand(chand)
+        self.ywin = ywin
+        self.yez = yez
+        self.cez = cez
     
-    def settjqkx(self):
-        self.ytjqkx = self.caltjqkx("y",self.yhand)
-        self.ctjqkx = self.caltjqkx("c",self.chand)
+    def sethand(self,hand):
+        hand = sorted(hand[0:-1])
+        tjstr,hcount,tjlis = self.sortez(hand)
+        hnum = hand[0:len(hand)-hcount-1]
+        hnum.extend([x for x in tjstr])
+        return hnum
+    
+    def setez(self):
+        self.yez = self.calez(self.yhand)
+        self.cez = self.calez(self.chand)
         
-    def caltjqkx(self,hand):
+    def sortez(self,hand):
         tjlis = [hand.count("T"),hand.count("J"),
                  hand.count("Q"),hand.count("K"),hand.count("X")]
-        ycount = sum(tjlis)
-        if ycount >= 7:
-            return ycount+228
-        elif ycount == 6:
+        hcount = sum(tjlis)
+        tjstr = ""
+        for i in range(5):
+            tjstr += tjlis[i] * ["T","J","Q","K","X"][i]
+        return [tjstr,hcount,tjlis]
+    
+    def calez(self,hand):
+        tjstr,hcount,tjlis = self.sortez(hand)
+        if hcount >= 7:
+            return hcount+228
+        elif hcount == 6:
             return tjlis[1]+tjlis[3]+tjlis[4]+228
-        elif ycount == 0:
+        elif hcount == 0:
             return 1
-        elif ycount == 1:
+        elif hcount == 1:
             for i in range(5):
                 if tjlis[i] == 1:
                     return i+2
         else:
-            tjstr = ""
-            for i in range(5):
-                tjstr += tjlis[i] * ["T","J","Q","K","X"][i] 
-            if ycount == 2:
-                l = ['TT', 'TJ', 'TQ', 'TK', 'TX', 'JJ', 'JQ', 'JK', 'JX', 'QQ', 'QK', 'QX', 'KK', 'KX', 'XX']
-                return 7 + l.index(tjstr)
-            elif ycount == 3:
-                l = ['TTT', 'TTJ', 'TTQ', 'TTK', 'TTX', 'TJJ', 'TJQ', 'TJK', 'TJX', 'TQQ', 'TQK', 'TQX', 'TKK', 'TKX', 'TXX', 'JJJ', 'JJQ', 'JJK', 'JJX', 'JQQ', 'JQK', 'JQX', 'JKK', 'JKX', 'JXX', 'QQQ', 'QQK', 'QQX', 'QKK', 'QKX', 'QXX', 'KKK', 'KKX', 'KXX']
-                return 22 + l.index(tjstr)
-            elif ycount == 4:
-                l = ['TTTT', 'TTTJ', 'TTTQ', 'TTTK', 'TTTX', 'TTJJ', 'TTJQ', 'TTJK', 'TTJX', 'TTQQ', 'TTQK', 'TTQX', 'TTKK', 'TTKX', 'TTXX', 'TJJJ', 'TJJQ', 'TJJK', 'TJJX', 'TJQQ', 'TJQK', 'TJQX', 'TJKK', 'TJKX', 'TJXX', 'TQQQ', 'TQQK', 'TQQX', 'TQKK', 'TQKX', 'TQXX', 'TKKK', 'TKKX', 'TKXX', 'JJJJ', 'JJJQ', 'JJJK', 'JJJX', 'JJQQ', 'JJQK', 'JJQX', 'JJKK', 'JJKX', 'JJXX', 'JQQQ', 'JQQK', 'JQQX', 'JQKK', 'JQKX', 'JQXX', 'JKKK', 'JKKX', 'JKXX', 'QQQQ', 'QQQK', 'QQQX', 'QQKK', 'QQKX', 'QQXX', 'QKKK', 'QKKX', 'QKXX', 'KKKK', 'KKKX', 'KKXX']
-                return 56 + l.index(tjstr)
+            global eznum
+            if hcount == 2:
+                return 7 + eznum[0].index(tjstr)
+            elif hcount == 3:
+                return 22 + eznum[1].index(tjstr)
+            elif hcount == 4:
+                return 56 + eznum[2].index(tjstr)
             else:
-                l = ['TTTTJ', 'TTTTQ', 'TTTTK', 'TTTTX', 'TTTJJ', 'TTTJQ', 'TTTJK', 'TTTJX', 'TTTQQ', 'TTTQK', 'TTTQX', 'TTTKK', 'TTTKX', 'TTTXX', 'TTJJJ', 'TTJJQ', 'TTJJK', 'TTJJX', 'TTJQQ', 'TTJQK', 'TTJQX', 'TTJKK', 'TTJKX', 'TTJXX', 'TTQQQ', 'TTQQK', 'TTQQX', 'TTQKK', 'TTQKX', 'TTQXX', 'TTKKK', 'TTKKX', 'TTKXX', 'TJJJJ', 'TJJJQ', 'TJJJK', 'TJJJX', 'TJJQQ', 'TJJQK', 'TJJQX', 'TJJKK', 'TJJKX', 'TJJXX', 'TJQQQ', 'TJQQK', 'TJQQX', 'TJQKK', 'TJQKX', 'TJQXX', 'TJKKK', 'TJKKX', 'TJKXX', 'TQQQQ', 'TQQQK', 'TQQQX', 'TQQKK', 'TQQKX', 'TQQXX', 'TQKKK', 'TQKKX', 'TQKXX', 'TKKKK', 'TKKKX', 'TKKXX', 'JJJJQ', 'JJJJK', 'JJJJX', 'JJJQQ', 'JJJQK', 'JJJQX', 'JJJKK', 'JJJKX', 'JJJXX', 'JJQQQ', 'JJQQK', 'JJQQX', 'JJQKK', 'JJQKX', 'JJQXX', 'JJKKK', 'JJKKX', 'JJKXX', 'JQQQQ', 'JQQQK', 'JQQQX', 'JQQKK', 'JQQKX', 'JQQXX', 'JQKKK', 'JQKKX', 'JQKXX', 'JKKKK', 'JKKKX', 'JKKXX', 'QQQQK', 'QQQQX', 'QQQKK', 'QQQKX', 'QQQXX', 'QQKKK', 'QQKKX', 'QQKXX', 'QKKKK', 'QKKKX', 'QKKXX', 'KKKKX', 'KKKXX']
-                return 121 + l.index(tjstr)
+                return 121 + eznum[3].index(tjstr)
             
+    def outhand(self,hand):
+        ret = ""
+        for i in hand:
+            ret += i
+        return ret
     def output(self,outfile):
+        self.setez()
         l = str(self.turnlen)
-        for i in list(map(str,[self.yfirst,self.ywin,self.yhand,self.chand,self.ytjqkx,self.ctjqkx])):
+        for i in list(map(str,[self.yfirst,self.ywin,self.outhand(self.yhand),self.outhand(self.chand),self.yez,self.cez])):
             l += "," + i
-        with open(outfile,"a") as fo:
+        with open(outfile,"a",encoding = "utf-8") as fo:
             fo.write(l)
             for j in self.turns:
                 fo.write(" "+j.output())
@@ -106,7 +126,19 @@ class turn:
         print("bad:",self.bad)
         print("penalty:",self.strpenalty())
         print("pas:",self.pas)
-        
+
+def ezcal(ez):
+    global eznum
+    if ez == 1:return "0枚"
+    elif ez <= 6:return "1枚("+["T","J","Q","K","X"][ez-2]+")"
+    elif ez <= 21:return "2枚("+eznum[0][ez-7]+")"
+    elif ez <= 55:return "3枚("+eznum[1][ez-22]+")"
+    elif ez <= 120:return "4枚("+eznum[2][ez-56]+")"
+    elif ez <= 227:return "5枚("+eznum[3][ez-121]+")"
+    elif ez <= 234:return "6枚(JKX"+str(ez-228)+"枚)"
+    elif ez <= 239:return str(ez-235)+"枚"
+    else:return "E"
+
 def substituteh(st):
     st = st.replace("+","")
     st = st.replace("10","T")
@@ -136,8 +168,7 @@ def readnturn(yturn,n):
         print("エラーです。コードrnt11")
         ret = turn(yturn)
         return ret
-    print(n)
-    if "%" in n:
+    if n == "%":
         ret = turn(yturn,pas = 1)
         return ret
     i = 0
@@ -146,7 +177,6 @@ def readnturn(yturn,n):
     if n[0] != "[":
         draw = n[0]
         i += 2
-        print(n)
         try:
             if n[2] == "%":
                 ret = turn(yturn,draw = draw,pas = 1)
@@ -161,18 +191,21 @@ def readnturn(yturn,n):
     beg = i+1
     end = n.find("]")
     p = n[beg:end].split(sep = ",")
-    i = end+2-yturn
+    i = end+2
     if i >= nlen:
         ret = turn(yturn,draw = draw,p = p)
         return ret
     pfac = 0
+    if n[i] == ",":
+        i += 1
     if n[i] == "[":
         beg = i+1
         end = beg + n[beg:].find("]")
         pfac = n[beg:end].split(sep = ",")
         i = end + 2
     else:
-        i += yturn
+        if n[i] == ",":
+            i += 1
     if i >= nlen:
         ret = turn(yturn,draw = draw,p = p,pfac = pfac)
         return ret
@@ -203,7 +236,7 @@ def readnirecord():
         elif inp == "1" or inp == "１":
             break
         try:
-            with open(fwname,"r") as fw:
+            with open(fwname,"r",encoding = "utf-8") as fw:
                 if "vcr" != fw.readline():
                     print("書き込むファイルはvcr形式ではありません。それでも続けますか？\n"+
                           "はい：１　いいえ：０")
@@ -213,19 +246,18 @@ def readnirecord():
                     except ValueError:
                         continue
         except FileNotFoundError:
-            with open(fwname,"w") as fw:
+            with open(fwname,"w",encoding = "utf-8") as fw:
                 fw.write("vcr\n")
     print("読み込みを開始します。この処理は時間がかかる事があります。")
-    with open(foname,"r",encoding = "shift_jis") as f:
+    with open(foname,"r",encoding = "utf-8") as f:
         con = True
         while con:
             turns = []
             try:
                 yfirst,l=f.readline().split(sep = ":")
-                #yfirst,l = u(f.readline(),"utf-8").encode("utf-8").split(sep=":")
             except ValueError:
-                print("エラーが発生しました。コード:rn11")
                 break
+            
             try:
                 d,m = f.readline().split(sep=":")
             except ValueError:
@@ -256,15 +288,13 @@ def readnirecord():
                 else:
                     nturn = readnturn(yturn,n)
                     turns.append(nturn)
-            new = game(len(turns),turns,yfirst,ylose,yhand,chand)
+            new = game(len(turns),turns,yfirst,int(not ylose),yhand,chand)
             games.append(new)
             new.output(fwname)
+    print("読み込みが完了しました。")
     print("続けて読み込んだデータを分析しますか？はい：１　いいえ：０")
-    try:
-        if 1 == int(input()):
-            analysevcr()
-    except ValueError:
-        print("ホームに戻ります。")
+    if input() in ["1","１"]:
+        analysevcr(fwname)
     
 def analysevcr(fname = 0):
     global games
@@ -276,28 +306,25 @@ def analysevcr(fname = 0):
                   "読み込むファイルの名前を、.txtを含めず入力してください。終了：end")
             fname = input() + ".txt"
             if fname == "end.txt":
-                print("ホームに戻ります。")
+                print("ホームに戻ります。\n")
                 return
             print(fname + "を開きます。よろしいですか？はい：１　いいえ：０　終了：end")
             inp = input()
+            if inp in ["1","１"]:
+                break
             if inp == "end":
-                print("ホームに戻ります。")
+                print("ホームに戻ります。\n")
                 return
-            try:
-                if 1 == int(inp):
-                    break
-            except ValueError:
-                pass
-        with open(fname,"r") as f:
+        with open(fname,"r",encoding = "utf-8") as f:
             for line in f:
                 gandt = line.split(sep=" ")
-                turnlen,yfirst,ywin,yhand,chand,ytjqkx,ctjqkx = gandt[0].split(sep = ",")
+                turnlen,yfirst,ywin,yhand,chand,yez,cez = gandt[0].split(sep = ",")
                 turns = []
                 for i in gandt[1:]:
                     yourturn,draw,p,pfac,bad,penalty,pas = i.split(sep = ",")
-                    newturn = turn(int(yourturn),int(draw),p,pfac,int(bad),penalty,int(pas))
+                    newturn = turn(int(yourturn),draw,p,pfac,int(bad),penalty,int(pas))
                     turns.append(newturn)
-                newgame = game(int(turnlen),turns,int(yfirst),int(ywin),yhand,chand,int(ytjqkx),int(ctjqkx))
+                newgame = game(int(turnlen),turns,int(yfirst),int(ywin),yhand,chand,int(yez),int(cez))
                 games.append(newgame)
     while True:
         print("統計を出します。テキストファイルとして出力します。\n"+
@@ -306,18 +333,18 @@ def analysevcr(fname = 0):
         print(foname + "に出力します。よろしいですか？はい：１　いいえ：０ 終了：end")
         inp = input()
         if inp == "end":
-            print("ホームに戻ります。")
+            print("ホームに戻ります。\n")
             return
-        elif inp == "1" or inp == "１":
+        elif inp in ["1","１"]:
             break
     while True:
         print("出力したいデータのコードを入力してください。\n"+
               "終了：end 基本情報:0 革命・57カットの回数:1\n"+
               "先手の初手の枚数:2\n"+
-              "絵札分類の相関のエクセルシート:3")
+              "絵札分類の相関のcsvファイル:3")
         mode = input()
         if mode == "end":
-            print("ホームに戻ります。")
+            print("ホームに戻ります。\n")
             return
         try:
             mode=int(mode)
@@ -326,13 +353,13 @@ def analysevcr(fname = 0):
         with open(foname,"a") as fo:
             if mode == 0:
                 gamenum = len(games)
-                fo.write("試合数："+str(gamenum)+"試合\n")
+                fo.write("試合数："+str(gamenum)+"\n")
                 winnum = 0
                 winfirst = 0
                 firstnum = 0
                 for i in games:
                     winnum += i.ywin
-                    if i.yfirst == 1:
+                    if i.yfirst:
                         winfirst += i.ywin
                         firstnum += 1
                 try:
@@ -342,8 +369,100 @@ def analysevcr(fname = 0):
                 except ZeroDivisionError:
                     print("試合数が不足しているため、正しく記録されませんでした。")
                 print("基本情報の書き込みが終了しました。")
+            elif mode == 1:
+                gamenum,gc,gcend,gcendg,gcg,rl,rlg = len(games),0,0,0,0,0,0
+                for i in games:
+                    orgcg,orrlg = 0,0
+                    for j in range(i.turnlen):
+                        if i.turns[j].pfac == "0":
+                            turnp = i.turns[j].p.replace("X","")
+                            if turnp == "57":
+                                gc += 1
+                                if not orgcg:
+                                    orgcg = 1
+                                    gcg += 1
+                                if j == i.turnlen-3:
+                                    if not gcendg:
+                                        gcend += 1
+                                        gcendg = 1
+                            elif turnp == "1729":
+                                rl += 1
+                                if not orrlg:
+                                    orrlg += 1
+                                    rlg += 1
+                try:
+                    fo.write("グロタンカットの回数:"+str(gc)+"\n")
+                    fo.write("グロタンカットのあった試合の数/割合:"+str(gcg)+"/{:.2%}\n".format(gcg/gamenum))
+                    fo.write("グロタンカットから上がった回数/割合:"+str(gcend)+"/{:.2%}\n".format(gcend/gamenum))
+                    fo.write("ラマヌジャン革命の回数:"+str(rl)+"\n")
+                    fo.write("ラマヌジャン革命のあった試合の数/割合:"+str(rlg)+"/{:.2%}\n".format(rlg/gamenum))
+                except ZeroDivisionError:
+                    print("試合数が不足しているため、正しく記録されませんでした。")
+                print("革命・57カットの回数の書き込みが終了しました。")
+            elif mode == 2:
+                fpmany = [0,0,0,0,0,0,0,0,0,0,0,0,0]
+                for i in games:
+                    fp = i.turns[0].p.replace("X","")
+                    if i.turns[0].pas:
+                        fpmany[0] += 1
+                    else:
+                        fpmany[len(fp)] += 1
+                fo.write("先手の初手枚数\nパスまたは素数でない数を出した回数:"+str(fpmany[0])+"\n")
+                for i in range(1,13):
+                    fo.write(str(i)+"枚出し:"+str(fpmany[i])+"\n")
+                print("先手の初手枚数の書き込みが完了しました。")
+            elif mode == 3:
+                while True:
+                    print("出力するcsvファイルのファイル名を.csvを含めずに入力してください。"+
+                          "注意:必ず新しいファイル名を入力してください。新規作成する必要はありません。")
+                    fwname = input()+".csv"
+                    print(fwname+"に出力します。よろしいですか？はい：１　いいえ：０ 終了：end")
+                    if input() in ["1","１"]:
+                        break
+                print("出力します。\nこの処理には時間がかかることがあります。")
+                a = [["絵札属性番号","絵札属性","試合数","勝","敗","グロタン勝","グロタン敗","革命勝","革命敗","パス勝","パス敗","1枚勝","1枚敗","2枚勝","2枚敗","3枚勝","3枚敗","4枚勝","4枚敗","5枚勝","5枚敗","6枚以上勝","6枚以上敗","勝・相手絵札属性番号","敗・相手絵札属性番号"]]
+                for i in range(1,194):
+                    a.append([i,ezcal(i),0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,[],[]])
+                for g in games:
+                    rl = 0
+                    if g.turns[0].p == 0:
+                        fpmany = 0
+                    else:
+                        fpmany = len(g.turns[0].p.replace("X",""))
+                    gcend = g.turns[-3].p.replace("X","") == "57" and g.turns[-3].pfac == "0"
+                    for j in g.turns:
+                        if j.pfac == "0":
+                            if j.p.replace("X","") == "1729":
+                                rl = 1
+                    print(g.yez,a[g.yez])
+                    print(a[g.yez][2])
+                    a[g.yez][2] += 1
+                    a[g.yez][4-g.ywin] += 1
+                    a[g.yez][24-g.ywin].append(cez)
+                    a[g.yez][10+2*fpmany-g.ywin]
+                    if gcend:
+                        a[g.yez][6-g.ywin] += 1
+                    if rl:
+                        a[g.yez][8-g.ywin] += 1
+                b = ["計","",0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,"",""]
+                for c in a[1:]:
+                    for i in range(2,24):
+                        b[i] += c[i]
+                    o,p = "",""
+                    for d in c[23]:
+                        o += str(d)
+                    for d in c[24]:
+                        p += str(d)
+                    c[23],c[24] = o,p
+                a.append(b)
+                with open(fwname,"w") as fw:
+                    w = csv.writer(fw)
+                    w.writerows(a)
+                print("ファイルの作成が完了しました。\n"+
+                      "エクセルからこのファイルを開く場合、\n"+
+                      "ファイル>開く　より作製したcsvファイルを選択してください。")
             else:
-                print("準備中です。")
+                print("正しい値を入力してください。")
 
 def home():
     while True:
