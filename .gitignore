@@ -102,3 +102,11 @@ venv.bak/
 
 # mypy
 .mypy_cache/
+
+#Files maked by programs
+goro.csv
+
+#test file
+ni.txt
+vcr.txt
+vcrr.txt
