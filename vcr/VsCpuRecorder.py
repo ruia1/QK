@@ -421,7 +421,7 @@ def analysevcr(fname = 0):
                         break
                 print("出力します。\nこの処理には時間がかかることがあります。")
                 a = [["絵札属性番号","絵札属性","試合数","勝","敗","グロタン勝","グロタン敗","革命勝","革命敗","パス勝","パス敗","1枚勝","1枚敗","2枚勝","2枚敗","3枚勝","3枚敗","4枚勝","4枚敗","5枚勝","5枚敗","6枚以上勝","6枚以上敗","勝・相手絵札属性番号","敗・相手絵札属性番号"]]
-                for i in range(1,194):
+                for i in range(1,240):
                     a.append([i,ezcal(i),0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,[],[]])
                 for g in games:
                     rl = 0
@@ -434,8 +434,6 @@ def analysevcr(fname = 0):
                         if j.pfac == "0":
                             if j.p.replace("X","") == "1729":
                                 rl = 1
-                    print(g.yez,a[g.yez])
-                    print(a[g.yez][2])
                     a[g.yez][2] += 1
                     a[g.yez][4-g.ywin] += 1
                     a[g.yez][24-g.ywin].append(cez)
