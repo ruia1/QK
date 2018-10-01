@@ -412,53 +412,73 @@ def analysevcr(fname = 0):
                     fo.write(str(i)+"枚出し:"+str(fpmany[i])+"\n")
                 print("先手の初手枚数の書き込みが完了しました。")
             elif mode == 3:
+                back = False
                 while True:
-                    print("出力するcsvファイルのファイル名を.csvを含めずに入力してください。"+
-                          "注意:必ず新しいファイル名を入力してください。新規作成する必要はありません。")
-                    fwname = input()+".csv"
-                    print(fwname+"に出力します。よろしいですか？はい：１　いいえ：０ 終了：end")
-                    if input() in ["1","１"]:
+                    while True:
+                        print("出力するcsvファイルのファイル名を.csvを含めずに入力してください。\n"+
+                              "注意:必ず新しいファイル名を入力してください。新規作成する必要はありません。")
+                        fwname = input()+".csv"
+                        print(fwname+"に出力します。よろしいですか？はい：１　いいえ：０ 終了：end")
+                        inp = input()
+                        if inp in ["1","１"]:
+                            break
+                        elif inp == "end":
+                            back = True
+                            break
+                    if back:
                         break
-                print("出力します。\nこの処理には時間がかかることがあります。")
-                a = [["絵札属性番号","絵札属性","試合数","勝","敗","グロタン勝","グロタン敗","革命勝","革命敗","パス勝","パス敗","1枚勝","1枚敗","2枚勝","2枚敗","3枚勝","3枚敗","4枚勝","4枚敗","5枚勝","5枚敗","6枚以上勝","6枚以上敗","勝・相手絵札属性番号","敗・相手絵札属性番号"]]
-                for i in range(1,240):
-                    a.append([i,ezcal(i),0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,[],[]])
-                for g in games:
-                    rl = 0
-                    if g.turns[0].p == 0:
-                        fpmany = 0
-                    else:
-                        fpmany = len(g.turns[0].p.replace("X",""))
-                    gcend = g.turns[-3].p.replace("X","") == "57" and g.turns[-3].pfac == "0"
-                    for j in g.turns:
-                        if j.pfac == "0":
-                            if j.p.replace("X","") == "1729":
-                                rl = 1
-                    a[g.yez][2] += 1
-                    a[g.yez][4-g.ywin] += 1
-                    a[g.yez][24-g.ywin].append(cez)
-                    a[g.yez][10+2*fpmany-g.ywin]
-                    if gcend:
-                        a[g.yez][6-g.ywin] += 1
-                    if rl:
-                        a[g.yez][8-g.ywin] += 1
-                b = ["計","",0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,"",""]
-                for c in a[1:]:
-                    for i in range(2,24):
-                        b[i] += c[i]
-                    o,p = "",""
-                    for d in c[23]:
-                        o += str(d)
-                    for d in c[24]:
-                        p += str(d)
-                    c[23],c[24] = o,p
-                a.append(b)
-                with open(fwname,"w") as fw:
-                    w = csv.writer(fw)
-                    w.writerows(a)
-                print("ファイルの作成が完了しました。\n"+
-                      "エクセルからこのファイルを開く場合、\n"+
-                      "ファイル>開く　より作製したcsvファイルを選択してください。")
+                    try:
+                        with open(fwname,"w"):
+                            pass
+                    except PermissionError:
+                        print(fname,"が存在します。該当ファイルを削除するか、ファイル名を変更してください。\n")
+                        continue
+                    print("出力します。\nこの処理には時間がかかることがあります。\n")
+                    a = [["絵札属性番号","絵札属性","試合数","勝","敗","グロタン勝","グロタン敗","革命勝","革命敗","パス勝","パス敗","1枚勝","1枚敗","2枚勝","2枚敗","3枚勝","3枚敗","4枚勝","4枚敗","5枚勝","5枚敗","6枚以上勝","6枚以上敗","勝・相手絵札属性番号","敗・相手絵札属性番号"]]
+                    for i in range(1,240):
+                        a.append([i,ezcal(i),0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,[],[]])
+                    for g in games:
+                        rl = 0
+                        if g.turns[0].p == 0:
+                            fpmany = 0
+                        else:
+                            fpmany = len(g.turns[0].p.replace("X",""))
+                        gcend = g.turns[-3].p.replace("X","") == "57" and g.turns[-3].pfac == "0"
+                        for j in g.turns:
+                            if j.pfac == "0":
+                                if j.p.replace("X","") == "1729":
+                                    rl = 1
+                        a[g.yez][2] += 1
+                        a[g.yez][4-g.ywin] += 1
+                        a[g.yez][24-g.ywin].append(cez)
+                        a[g.yez][10+2*fpmany-g.ywin]
+                        if gcend:
+                            a[g.yez][6-g.ywin] += 1
+                        if rl:
+                            a[g.yez][8-g.ywin] += 1
+                    b = ["計","",0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,"",""]
+                    for c in a[1:]:
+                        for i in range(2,22):
+                            b[i] += c[i]
+                        o,p = "",""
+                        for d in c[23]:
+                            o += str(d)
+                        for d in c[24]:
+                            p += str(d)
+                        c[23],c[24] = o,p
+                    a.append(b)
+                    for r in range(len(a)):
+                        for s in range(len(a[r])):
+                            if a[r][s] == 0:
+                                a[r][s] = ""
+                    with open(fwname,"w+") as fw:
+                        w = csv.writer(fw,lineterminator="\n")
+                        w.writerows(a)
+                    print("ファイルの作成が完了しました。\n"+
+                          "エクセルからこのファイルを開く場合、\n"+
+                          "ファイル>開く　より作製したcsvファイルを選択してください。\n")
+                if back:
+                    continue
             else:
                 print("正しい値を入力してください。")
 
