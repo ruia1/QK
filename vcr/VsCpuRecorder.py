@@ -79,7 +79,7 @@ class game:
             fo.write("\n")
     
 class turn:
-    def __init__(self,yourturn,draw = 0,p = 0,pfac = 0,bad = 0,penalty = 0,pas = 0):
+    def __init__(self,yourturn,draw = "",p = "",pfac = "",bad = "",penalty = "",pas = ""):
         self.yourturn = yourturn
         self.draw = draw
         self.p = p
@@ -89,24 +89,24 @@ class turn:
         self.pas = pas
         
     def strp(self):
-        if type(self.p) == int:
-            return str(self.p)
+        if type(self.p) == str:
+            return self.p
         q = ""
         for i in self.p:
             q += i
         return q
     
     def strpfac(self):
-        if type(self.pfac) == int:
-            return str(self.pfac)
+        if type(self.pfac) == str:
+            return self.pfac
         qfac = ""
         for i in self.pfac:
             qfac += i
         return qfac
     
     def strpenalty(self):
-        if type(self.penalty) == int:
-            return str(self.penalty)
+        if type(self.penalty) == str:
+            return self.penalty
         ret = ""
         for i in self.penalty:
             ret += i
@@ -190,7 +190,7 @@ def readnturn(yturn,n):
         return ret
     beg = i+1
     end = n.find("]")
-    p = n[beg:end].split(sep = ",")
+    p = n[beg:end].replace(",","")
     i = end+2
     if i >= nlen:
         ret = turn(yturn,draw = draw,p = p)
@@ -201,7 +201,7 @@ def readnturn(yturn,n):
     if n[i] == "[":
         beg = i+1
         end = beg + n[beg:].find("]")
-        pfac = n[beg:end].split(sep = ",")
+        pfac = n[beg:end].replace(",","")
         i = end + 2
     else:
         if n[i] == ",":
@@ -209,12 +209,13 @@ def readnturn(yturn,n):
     if i >= nlen:
         ret = turn(yturn,draw = draw,p = p,pfac = pfac)
         return ret
-    penalty = n[i:-2].split(sep=",")
+    penalty = n[i:-2].replace(",","")
     ret = turn(yturn,draw = draw,p = p,pfac = pfac,bad = 1,penalty = penalty,pas = 1)
     return ret
 
 def readnirecord():
     global games
+    games = []
     while True:
         print('入力は３つあります。1/3\n'+
               'nishimuraさんの形式になっている棋譜を、後から読み込みやすいVCR形式に変換します。\n'+
@@ -233,74 +234,69 @@ def readnirecord():
         inp=input()
         if inp == "home":
             return
-        elif inp == "1" or inp == "１":
+        elif inp == "back":
+            continue
+        elif inp in ["1","１"]:
+            with open(fwname,"w",encoding = "utf-8"):
+                pass
             break
-        try:
-            with open(fwname,"r",encoding = "utf-8") as fw:
-                if "vcr" != fw.readline():
-                    print("書き込むファイルはvcr形式ではありません。それでも続けますか？\n"+
-                          "はい：１　いいえ：０")
-                    try:
-                        if int(input()) != 1:
-                            continue
-                    except ValueError:
-                        continue
-        except FileNotFoundError:
-            with open(fwname,"w",encoding = "utf-8") as fw:
-                fw.write("vcr\n")
+        else:
+            print("正しい値を入力してください。")
+            continue
     print("読み込みを開始します。この処理は時間がかかる事があります。")
-    with open(foname,"r",encoding = "utf-8") as f:
-        con = True
-        while con:
-            turns = []
-            try:
-                yfirst,l=f.readline().split(sep = ":")
-            except ValueError:
-                break
-            
-            try:
-                d,m = f.readline().split(sep=":")
-            except ValueError:
-                print("エラーが発生しました。コード:rn12")
-                break
-            if yfirst == "you":
-                yfirst = 1
-            else:
-                yfirst = 0
-            yhand = substituteh([m,l][yfirst]).split(sep=",")
-            chand = substituteh([l,m][yfirst]).split(sep=",")
-            del d,l,m
-            while True:
+    try:
+        with open(foname,"r",encoding = "utf-8") as f:
+            con = True
+            while con:
+                turns = []
                 try:
-                    yturn,n = f.readline().split(sep=":")
+                    yfirst,l=f.readline().split(sep = ":")
                 except ValueError:
-                    con = False
-                    print("エラーが発生しました。コード:rn21")
                     break
-                if yturn == "you":
-                    yturn = 1
-                else:
-                    yturn = 0
-                if "lose" in n:
-                    ylose = yturn
-                    f.readline()
+                try:
+                    d,m = f.readline().split(sep=":")
+                except ValueError:
+                    print("エラーが発生しました。コード:rn12")
                     break
+                if yfirst == "you":
+                    yfirst = 1
                 else:
-                    nturn = readnturn(yturn,n)
-                    turns.append(nturn)
-            new = game(len(turns),turns,yfirst,int(not ylose),yhand,chand)
-            games.append(new)
-            new.output(fwname)
-    print("読み込みが完了しました。")
-    print("続けて読み込んだデータを分析しますか？はい：１　いいえ：０")
-    if input() in ["1","１"]:
-        analysevcr(fwname)
-    
+                    yfirst = 0
+                yhand = substituteh([m,l][yfirst]).split(sep=",")
+                chand = substituteh([l,m][yfirst]).split(sep=",")
+                del d,l,m
+                while True:
+                    try:
+                        yturn,n = f.readline().split(sep=":")
+                    except ValueError:
+                        con = False
+                        print("エラーが発生しました。コード:rn21")
+                        break
+                    if yturn == "you":
+                        yturn = 1
+                    else:
+                        yturn = 0
+                    if "lose" in n:
+                        ylose = yturn
+                        f.readline()
+                        break
+                    else:
+                        nturn = readnturn(yturn,n)
+                        turns.append(nturn)
+                new = game(len(turns),turns,yfirst,int(not ylose),yhand,chand)
+                games.append(new)
+                new.output(fwname)
+        print("読み込みが完了しました。")
+        print("続けて読み込んだデータを分析しますか？はい：１　いいえ：０")
+        if input() in ["1","１"]:
+            analysevcr(fwname)
+    except FileNotFoundError:
+        print(foname,"は存在しません。")
+        readnirecord()
+
 def analysevcr(fname = 0):
     global games
     if not fname:
-        del games
-        games = []
         while True:
             print("VCR形式のファイルを読み込み、分析します。\n"+
                   "読み込むファイルの名前を、.txtを含めず入力してください。終了：end")
@@ -425,6 +421,8 @@ def analysevcr(fname = 0):
                         elif inp == "end":
                             back = True
                             break
+                        else:
+                            print("正しい値を入力してください。")
                     if back:
                         break
                     try:
@@ -450,7 +448,7 @@ def analysevcr(fname = 0):
                                     rl = 1
                         a[g.yez][2] += 1
                         a[g.yez][4-g.ywin] += 1
-                        a[g.yez][24-g.ywin].append(cez)
+                        a[g.yez][24-g.ywin].append(g.cez)
                         a[g.yez][10+2*fpmany-g.ywin]
                         if gcend:
                             a[g.yez][6-g.ywin] += 1
@@ -477,6 +475,7 @@ def analysevcr(fname = 0):
                     print("ファイルの作成が完了しました。\n"+
                           "エクセルからこのファイルを開く場合、\n"+
                           "ファイル>開く　より作製したcsvファイルを選択してください。\n")
+                    break
                 if back:
                     continue
             else:
