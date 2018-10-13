@@ -3,6 +3,7 @@
 素数探索モード
 
 """
+from tkinter import *
 from milpri import milpri as m
 
 def add(n):#1足す
@@ -668,5 +669,83 @@ def sehome():
             print("終了します。")
             if '__main__'==__name__:input("終了するにはエンターを押してください...")
             return
+
+class setting:
+    def __init__(self,stnset=stnset(),cardset=cardset(),al=[],outset=outset()):
+        self.stnset = stnset
+        self.cardset = cardset
+        self.al = al
+        self.outset = outset
+
+class stnset:
+    def __init__(self,judlenme=True,qkp=True,lenmin="",lenmax="",sortme=True):
+        self.judlenme = judlenme
+        self.qkp = qkp
+        self.lennmin = lenmin
+        self.lenmax = lenmax
+        self.sortme = sortme
+
+class cardset:
+    def __init__(self,evensets=False,picsets=False,incdsets=False):
+        self.evensets = evensets
+        self.picsets = picsets
+        self.incdsets = incdsets
+
+class evensets:
+    def __init__(self,orper=True,evenmin=0,evenmax=100):
+        self.orper = orper
+        self.evenmin = evenmin
+        self.evenmax = evenmax
+        
+class picsets:
+    def __init__(self,orper=True,picmin=0,picmax=100):
+        self.orper = orper
+        self.picmin = picmin
+        self.picmax = picmax
+        
+class incdsets:
+    def __init__(self,hcds="",fcds="",incds=[]):
+        self.hcds = hcds
+        self.fcds = fcds
+        self.incds = incds
+        
+class outset:
+    def __init__(self,orcsv=False,csvdelim=0,xcsvset=csvset(),ycsvset=csvset()):
+        self.orcsv = orcsv
+        self.csvdelim = csvdelim
+        self.xcsvset = xcsvset
+        self.ycsvset = ycsvset
+        
+class txtset:
+    def __init__(self,txtname="",ornum=False,txtdelim=0):
+        self.txtname = txtname
+        self.ornum = ornum
+        self.txtdelim
+        
+class csvset:
+    def __init__(self,orstn=True,stnset=False,cussets=False):
+        self.orstn = orstn
+        self.stnset = stnset
+        self.cussets = cussets
+        
+class psc(Frame):
+    def __init__(self,master=None):
+        super().__init__(master)
+        self.pack()
+        self.createw(master)
+    def createw(self,master):
+        self.psl11 = Label(self,text="項目")
+        self.psl11.grid(row=0,column=0,columnspan=2,padx=5,pady=5)
+        self.psl12 = Label(self,text="現在の設定")
+        self.psl12.grid(row=0,column=2,columnspan=2,padx=5,pady=5)
+        
+def pshome():
+    ps1 = Tk()
+    ps1.title="素数探索モード"
+    ps2 = test(ps1)
+    ps2.mainloop()
+    
+
 if __name__ == '__main__':
     sehome()
+    pshome()
